@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  pg_master:
+    image: postgres:latest
+    container_name: pg_master
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: mydatabase
+    volumes:
+      - pg_master_data:/var/lib/postgresql/data
+      - ./master-init.sql:/docker-entrypoint-initdb.d/master-init.sql
+    ports:
+      - "5432:5432"
+
+  pg_replica:
+    image: postgres:latest
+    container_name: pg_replica
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: mydatabase
+      PG_REP_USER: replicator
+      PG_REP_PASSWORD: replicator
+    volumes:
+      - pg_replica_data:/var/lib/postgresql/data
+      - ./replica-init.sh:/docker-entrypoint-initdb.d/replica-init.sh
+    depends_on:
+      - pg_master
+    ports:
+      - "5433:5432"
+
+volumes:
+  pg_master_data:
+  pg_replica_data:
